@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaLinkedin, FaDiscord } from "react-icons/fa";
+import Image from "next/image";
 
 export default function Contact() {
   const [isVisible, setIsVisible] = useState(false);
@@ -16,16 +17,19 @@ export default function Contact() {
       name: "Icham M'MADI",
       linkedin: "https://www.linkedin.com/in/aichammmadi/",
       role: "Creative Front-End Developer",
+      image: "/images/team/icham.jpeg",
     },
     {
       name: "Samy Hamlat",
       linkedin: "https://www.linkedin.com/in/samy-hamlat-ab9220231/",
       role: "Full Stack Developer",
+      image: "/images/team/samy.jpeg",
     },
     {
       name: "Wissem Karboub",
       linkedin: "https://www.linkedin.com/in/wissem-karboub-5b10aa212/",
       role: "Mobile Developer",
+      image: "/images/team/wissem.jpeg",
     },
   ];
 
@@ -49,6 +53,22 @@ export default function Contact() {
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-400/10 via-purple-400/10 to-pink-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative z-10">
+                  <div className="relative w-full aspect-square mb-6 overflow-hidden rounded-lg bg-zinc-800">
+                    <Image
+                      src={member.image}
+                      alt={member.name}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      priority
+                      unoptimized
+                      onError={(e) => {
+                        console.error(`Error loading image: ${member.image}`);
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/images/placeholder.svg";
+                      }}
+                    />
+                  </div>
                   <h2 className="text-2xl font-light mb-2">{member.name}</h2>
                   <p className="text-gray-400 mb-4">{member.role}</p>
                   <Link

@@ -3,7 +3,7 @@ import Image from "next/image";
 
 const Navigation = () => {
   return (
-    <nav className="bg-black/80 backdrop-blur-sm text-white fixed w-full z-50">
+    <nav className="bg-transparent backdrop-blur-sm text-white fixed w-full z-50">
       <div className="flex justify-between items-center h-16 w-full px-6">
         <Link href="/" className="flex items-center group">
           <div className="relative w-10 h-10 animate-pulse">
