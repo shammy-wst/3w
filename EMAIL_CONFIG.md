@@ -29,7 +29,7 @@ Cela permet de s'assurer que personne ne peut utiliser le formulaire pour envoye
 
 Pour faciliter les tests pendant le développement, l'application utilise **Ethereal Email**, un service de faux emails qui permet de visualiser les emails envoyés sans avoir besoin de configurer un vrai compte email.
 
-### Comment utiliser le mode test :
+### Comment utiliser le mode test
 
 1. En mode développement (`npm run dev`), le mode Ethereal est automatiquement activé
 2. Remplissez et soumettez le formulaire de contact
