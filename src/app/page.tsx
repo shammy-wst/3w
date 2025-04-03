@@ -79,9 +79,9 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full relative">
       <motion.div
-        className="fixed inset-0 z-0 transition-colors duration-1000"
+        className="fixed inset-0 z-0 transition-colors duration-1000 pointer-events-none"
         animate={{
           backgroundColor:
             activeSection === "services" ? "rgb(17, 24, 39)" : "rgb(0, 0, 0)",
@@ -94,34 +94,38 @@ export default function Home() {
         className="flex items-center justify-center h-[90vh] relative overflow-hidden"
       >
         <div
-          className={`transition-all duration-1000 flex flex-col items-center gap-12 ${
+          className={`transition-all duration-1000 flex flex-col items-center gap-6 md:gap-12 px-4 ${
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
         >
           <div className="flex flex-col items-center">
-            <h1 className="text-7xl font-thin relative bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-7xl font-thin relative bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               3W
               <span className="absolute -inset-1 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 blur-xl rounded-full animate-pulse"></span>
             </h1>
-            <span className="text-2xl font-light tracking-[0.2em] text-gray-400 mt-2">
-              SOLUTIONS
+            <span className="text-xl md:text-2xl font-light tracking-[0.2em] text-gray-400 mt-2">
+              SOLUTION
             </span>
           </div>
 
           <Link
             href="/contact"
-            className="px-8 py-3 bg-zinc-900/50 hover:bg-zinc-800/50 transition-all duration-300 text-white font-light tracking-wider group relative overflow-hidden"
+            className="px-6 md:px-8 py-2 md:py-3 bg-zinc-900/50 hover:bg-zinc-800/50 transition-all duration-300 text-white font-light tracking-wider group relative overflow-hidden"
           >
-            <span className="relative z-10">RENCONTREZ L&apos;ÉQUIPE</span>
+            <span className="relative z-10 text-sm md:text-base">
+              RENCONTREZ L&apos;ÉQUIPE
+            </span>
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           </Link>
         </div>
 
         <button
           onClick={() => scrollToSection("services")}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
+          className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
         >
-          <span className="text-sm font-light tracking-wider">DÉCOUVRIR</span>
+          <span className="text-xs md:text-sm font-light tracking-wider">
+            DÉCOUVRIR
+          </span>
           <FaChevronDown className="animate-bounce" />
         </button>
       </section>
@@ -129,61 +133,65 @@ export default function Home() {
       {/* Services Section */}
       <section
         id="services"
-        className={`relative flex flex-col items-center justify-center min-h-[90vh] p-8 transition-all duration-1000 z-10 ${
+        className={`relative flex flex-col items-center justify-center min-h-[90vh] p-4 md:p-8 transition-all duration-1000 z-10 ${
           activeSection === "services" ? "scale-100" : "scale-95"
         }`}
       >
-        <div className="max-w-[90vw] w-full">
+        <div className="max-w-[95vw] md:max-w-[90vw] w-full">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-6xl font-thin text-center mb-24 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+            className="text-4xl md:text-6xl font-thin text-center mb-12 md:mb-24 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
           >
             Nos Services
           </motion.h2>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-16">
             {services.map((service, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: index * 0.2 }}
-                className="group relative overflow-hidden bg-zinc-900/50 p-16 hover:bg-zinc-800/50 transition-all duration-500 flex flex-col transform hover:scale-105"
+                className="group relative overflow-hidden bg-zinc-900/80 p-6 md:p-16 hover:bg-zinc-800/50 transition-all duration-500 flex flex-col transform hover:scale-105"
                 style={{
-                  minHeight: "600px",
+                  minHeight: "auto",
+                  height: "auto",
                 }}
               >
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-500`}
+                  className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-10 md:opacity-0 md:group-hover:opacity-20 transition-opacity duration-500`}
                 />
                 <div className="relative z-10 flex flex-col items-center text-center">
-                  <div className="mb-12 w-24 h-24 relative opacity-60 group-hover:opacity-100 transition-opacity">
+                  <div className="mb-6 md:mb-12 w-16 h-16 md:w-24 md:h-24 relative opacity-80 group-hover:opacity-100 transition-opacity">
                     <Image
                       src={service.image}
                       alt={service.title}
                       fill
+                      sizes="(max-width: 768px) 64px, 96px"
                       className="object-contain filter invert"
                     />
                   </div>
-                  <h2 className="text-4xl font-light mb-8 relative inline-block">
+                  <h2 className="text-2xl md:text-4xl font-light mb-4 md:mb-8 relative inline-block text-white">
                     {service.title}
                     <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 group-hover:w-full transition-all duration-700"></span>
                   </h2>
-                  <p className="text-xl font-light text-gray-300 leading-relaxed">
+                  <p className="text-base md:text-xl font-light text-white leading-relaxed">
                     {service.description}
                   </p>
                 </div>
               </motion.div>
             ))}
           </div>
-          <div className="flex justify-center mt-16">
+          <div className="flex justify-center mt-10 md:mt-16">
             <Link
               href="/contact"
-              className="px-8 py-3 bg-zinc-900/50 hover:bg-zinc-800/50 transition-all duration-300 text-white font-light tracking-wider group relative overflow-hidden flex items-center gap-3"
+              className="px-6 md:px-8 py-2 md:py-3 bg-zinc-900/80 hover:bg-zinc-800/50 transition-all duration-300 text-white font-light tracking-wider group relative overflow-hidden flex items-center gap-3"
             >
-              <span className="relative z-10">CONTACTEZ-NOUS</span>
-              <FaArrowRight className="relative z-10 group-hover:translate-x-2 transition-transform" />
+              <span className="relative z-10 text-sm md:text-base">
+                CONTACTEZ-NOUS
+              </span>
+              <FaArrowRight className="relative z-10 text-sm md:text-base group-hover:translate-x-2 transition-transform" />
               <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </Link>
           </div>
@@ -191,7 +199,7 @@ export default function Home() {
       </section>
 
       {/* Séparateur vertical */}
-      <div className="relative w-full h-32 flex items-center justify-center">
+      <div className="relative w-full h-24 md:h-32 flex items-center justify-center">
         <div className="relative h-full flex flex-col items-center">
           {/* Ligne pointillée */}
           <div className="h-full w-[2px] border-l-2 border-dashed border-gray-800"></div>
@@ -201,16 +209,112 @@ export default function Home() {
             onClick={() => scrollToSection("about")}
             className="absolute bottom-0 transform translate-y-1/2 cursor-pointer hover:scale-110 transition-transform"
           >
-            <div className="w-12 h-12 rounded-full border-2 border-gray-800 flex items-center justify-center bg-transparent backdrop-blur-sm">
-              <FaChevronDown className="text-gray-400 text-xl animate-bounce" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-gray-800 flex items-center justify-center bg-transparent backdrop-blur-sm">
+              <FaChevronDown className="text-gray-400 text-base md:text-xl animate-bounce" />
             </div>
           </button>
         </div>
       </div>
 
       {/* Qui Sommes-Nous Section */}
-      <section id="about" className="relative w-full h-[90vh] overflow-hidden">
-        <div className="absolute inset-0">
+      <section
+        id="about"
+        className="relative w-full min-h-[90vh] md:h-[90vh] overflow-hidden"
+      >
+        {/* Version mobile simple */}
+        <div className="md:hidden w-full min-h-[90vh] pb-24">
+          <div className="px-4 py-10">
+            <h2 className="text-4xl font-thin mb-8 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Qui Sommes-Nous
+            </h2>
+            <div className="prose prose-invert max-w-none">
+              <p className="text-lg font-light text-white leading-relaxed mb-8">
+                Née de la passion et de l&apos;ambition de trois jeunes
+                développeurs talentueux, 3W Solutions représente l&apos;alliance
+                parfaite entre créativité débordante et expertise technique.
+                Après l&apos;obtention de leurs diplômes, Samy, Icham et Wissem
+                ont décidé de repousser les limites du possible dans le monde du
+                développement web et mobile.
+              </p>
+
+              <div className="grid grid-cols-1 gap-4 mb-8">
+                <div className="text-center">
+                  <div className="text-4xl font-light text-blue-400 mb-2">
+                    15+
+                  </div>
+                  <div className="text-gray-400">Projets Innovants</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-light text-purple-400 mb-2">
+                    98%
+                  </div>
+                  <div className="text-gray-400">Satisfaction Client</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-light text-pink-400 mb-2">
+                    10k+
+                  </div>
+                  <div className="text-gray-400">Heures de Code</div>
+                </div>
+              </div>
+
+              <p className="text-lg font-light text-white leading-relaxed mb-12">
+                Avec une moyenne d&apos;âge de 24 ans, nous apportons un regard
+                neuf et des solutions innovantes à chaque défi. Notre mission ?
+                Transformer vos idées en réalités numériques exceptionnelles.
+              </p>
+            </div>
+
+            <h2 className="text-4xl font-thin mb-8 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Pourquoi Nous
+            </h2>
+
+            <div className="prose prose-invert max-w-none">
+              <p className="text-lg font-light text-white leading-relaxed mb-8">
+                Rejoindre 3W Solutions, c&apos;est faire partie d&apos;une
+                aventure unique où chaque jour apporte son lot de défis
+                passionnants. Notre équipe jeune et dynamique cultive un
+                environnement où l&apos;innovation et la créativité sont au cœur
+                de chaque projet.
+              </p>
+
+              <div className="space-y-8 mb-8">
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-light text-blue-400">
+                    Pour Nos Clients
+                  </h3>
+                  <ul className="space-y-2 text-base text-white">
+                    <li>• Solutions sur mesure et innovantes</li>
+                    <li>• Accompagnement personnalisé</li>
+                    <li>• Excellence technique garantie</li>
+                    <li>• Résultats mesurables et concrets</li>
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-light text-purple-400">
+                    Pour Nos Talents
+                  </h3>
+                  <ul className="space-y-2 text-base text-white">
+                    <li>• Projets stimulants et variés</li>
+                    <li>• Formation continue</li>
+                    <li>• Environnement de travail flexible</li>
+                    <li>• Évolution de carrière rapide</li>
+                  </ul>
+                </div>
+              </div>
+
+              <p className="text-lg font-light text-white leading-relaxed">
+                Que vous soyez un client à la recherche d&apos;excellence ou un
+                talent passionné par le développement, 3W Solutions vous offre
+                l&apos;opportunité de concrétiser vos ambitions dans un cadre
+                stimulant et innovant.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Version desktop avec animation */}
+        <div className="hidden md:block absolute inset-0">
           <div className="relative h-full w-full">
             <motion.div
               className="absolute inset-0 flex"
@@ -219,13 +323,13 @@ export default function Home() {
             >
               {/* Qui Sommes-Nous Content */}
               <div className="w-full h-full flex-none">
-                <div className="h-full flex items-center px-16">
+                <div className="h-full flex items-center px-4 md:px-16">
                   <div className="max-w-7xl mx-auto w-full">
                     <motion.h2
                       initial={{ opacity: 0, x: -50 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.8 }}
-                      className="text-6xl font-thin mb-16 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+                      className="text-4xl md:text-6xl font-thin mb-8 md:mb-16 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
                     >
                       Qui Sommes-Nous
                     </motion.h2>
@@ -235,7 +339,7 @@ export default function Home() {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
                       >
-                        <p className="text-2xl font-light text-gray-300 leading-relaxed">
+                        <p className="text-xl md:text-2xl font-light text-white leading-relaxed">
                           Née de la passion et de l&apos;ambition de trois
                           jeunes développeurs talentueux, 3W Solutions
                           représente l&apos;alliance parfaite entre créativité
@@ -249,9 +353,9 @@ export default function Home() {
                         initial={{ opacity: 0, y: 50 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.4 }}
-                        className="mt-12"
+                        className="mt-8 md:mt-12"
                       >
-                        <div className="grid grid-cols-3 gap-8 mb-12">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-12">
                           <div className="text-center">
                             <div className="text-5xl font-light text-blue-400 mb-4">
                               15+
@@ -281,7 +385,7 @@ export default function Home() {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.6 }}
                       >
-                        <p className="text-2xl font-light text-gray-300 leading-relaxed">
+                        <p className="text-xl md:text-2xl font-light text-white leading-relaxed">
                           Avec une moyenne d&apos;âge de 24 ans, nous apportons
                           un regard neuf et des solutions innovantes à chaque
                           défi. Notre mission ? Transformer vos idées en
@@ -323,20 +427,20 @@ export default function Home() {
               <div className="w-full h-full flex-none relative">
                 <button
                   onClick={toggleSection}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-32 flex flex-col items-center justify-center gap-4 py-8 border-x border-gray-800 bg-black/50 backdrop-blur-sm hover:bg-black/70 transition-colors text-gray-400 hover:text-white"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-16 md:w-32 flex flex-col items-center justify-center gap-2 md:gap-4 py-4 md:py-8 border-x border-gray-800 bg-black/50 backdrop-blur-sm hover:bg-black/70 transition-colors text-gray-400 hover:text-white"
                 >
-                  <span className="text-lg font-light tracking-wider text-center px-4">
+                  <span className="text-sm md:text-lg font-light tracking-wider text-center px-2 md:px-4">
                     Retour
                   </span>
-                  <FaChevronRight className="text-3xl animate-pulse rotate-180" />
+                  <FaChevronRight className="text-xl md:text-3xl animate-pulse rotate-180" />
                 </button>
-                <div className="h-full flex items-center px-16">
+                <div className="h-full flex items-center px-4 md:px-16">
                   <div className="max-w-7xl mx-auto w-full">
                     <motion.h2
                       initial={{ opacity: 0, x: 50 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.8 }}
-                      className="text-6xl font-thin mb-16 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+                      className="text-4xl md:text-6xl font-thin mb-8 md:mb-16 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
                     >
                       Pourquoi Nous
                     </motion.h2>
@@ -345,9 +449,9 @@ export default function Home() {
                         initial={{ opacity: 0, y: 50 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
-                        className="space-y-8"
+                        className="space-y-4 md:space-y-8"
                       >
-                        <p className="text-2xl font-light text-gray-300 leading-relaxed">
+                        <p className="text-xl md:text-2xl font-light text-white leading-relaxed">
                           Rejoindre 3W Solutions, c&apos;est faire partie
                           d&apos;une aventure unique où chaque jour apporte son
                           lot de défis passionnants. Notre équipe jeune et
@@ -355,12 +459,12 @@ export default function Home() {
                           l&apos;innovation et la créativité sont au cœur de
                           chaque projet.
                         </p>
-                        <div className="grid grid-cols-2 gap-12 my-16">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 my-8 md:my-16">
                           <div className="space-y-4">
-                            <h3 className="text-3xl font-light text-blue-400">
+                            <h3 className="text-2xl md:text-3xl font-light text-blue-400">
                               Pour Nos Clients
                             </h3>
-                            <ul className="space-y-4 text-xl text-gray-300">
+                            <ul className="space-y-4 text-base md:text-xl text-white">
                               <li>• Solutions sur mesure et innovantes</li>
                               <li>• Accompagnement personnalisé</li>
                               <li>• Excellence technique garantie</li>
@@ -368,10 +472,10 @@ export default function Home() {
                             </ul>
                           </div>
                           <div className="space-y-4">
-                            <h3 className="text-3xl font-light text-purple-400">
+                            <h3 className="text-2xl md:text-3xl font-light text-purple-400">
                               Pour Nos Talents
                             </h3>
-                            <ul className="space-y-4 text-xl text-gray-300">
+                            <ul className="space-y-4 text-base md:text-xl text-white">
                               <li>• Projets stimulants et variés</li>
                               <li>• Formation continue</li>
                               <li>• Environnement de travail flexible</li>
@@ -379,7 +483,7 @@ export default function Home() {
                             </ul>
                           </div>
                         </div>
-                        <p className="text-2xl font-light text-gray-300 leading-relaxed">
+                        <p className="text-xl md:text-2xl font-light text-white leading-relaxed">
                           Que vous soyez un client à la recherche
                           d&apos;excellence ou un talent passionné par le
                           développement, 3W Solutions vous offre
