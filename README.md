@@ -20,6 +20,16 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Email Contact Form
+
+This project includes a fully functional contact form that sends emails directly from the website. To configure the email functionality:
+
+1. Create a `.env.local` file at the root of the project
+2. Configure the email settings as described in the [EMAIL_CONFIG.md](./EMAIL_CONFIG.md) file
+3. Restart the development server
+
+The contact form is secured and includes validation to ensure proper data submission.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

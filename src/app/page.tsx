@@ -11,9 +11,16 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("");
   const [mounted, setMounted] = useState(false);
   const [showWhyUs, setShowWhyUs] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
+    // Optimiser le chargement initial
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setMounted(true);
+      setIsVisible(true);
+    }, 100);
+
     const updateActiveSection = () => {
       const sections = document.querySelectorAll("section[id]");
       const scrollPosition = window.scrollY;
@@ -33,10 +40,16 @@ export default function Home() {
       });
     };
 
-    setIsVisible(true);
-    updateActiveSection();
+    // Exécuter updateActiveSection une fois après le chargement initial
+    const initialUpdate = setTimeout(updateActiveSection, 300);
+
     window.addEventListener("scroll", updateActiveSection);
-    return () => window.removeEventListener("scroll", updateActiveSection);
+
+    return () => {
+      window.removeEventListener("scroll", updateActiveSection);
+      clearTimeout(timer);
+      clearTimeout(initialUpdate);
+    };
   }, []);
 
   const toggleSection = () => {
@@ -50,6 +63,7 @@ export default function Home() {
     }
   };
 
+  // Précharger les services pour éviter les rendus répétés
   const services = [
     {
       title: "Web Créatif",
@@ -74,6 +88,20 @@ export default function Home() {
     },
   ];
 
+  // État de chargement simple
+  if (isLoading) {
+    return (
+      <div className="flex flex-col w-full h-screen items-center justify-center">
+        <div className="text-2xl md:text-4xl font-thin relative bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          3W
+        </div>
+        <span className="text-base md:text-lg font-light tracking-[0.2em] text-gray-400 mt-2">
+          SOLUTION
+        </span>
+      </div>
+    );
+  }
+
   if (!mounted) {
     return null;
   }
@@ -81,8 +109,10 @@ export default function Home() {
   return (
     <div className="flex flex-col w-full relative">
       <motion.div
-        className="fixed inset-0 z-0 transition-colors duration-1000 pointer-events-none"
+        className="fixed inset-0 z-0 transition-colors duration-700 pointer-events-none"
+        initial={{ opacity: 0 }}
         animate={{
+          opacity: 1,
           backgroundColor:
             activeSection === "services" ? "rgb(17, 24, 39)" : "rgb(0, 0, 0)",
         }}
@@ -94,7 +124,7 @@ export default function Home() {
         className="flex items-center justify-center h-[90vh] relative overflow-hidden"
       >
         <div
-          className={`transition-all duration-1000 flex flex-col items-center gap-6 md:gap-12 px-4 ${
+          className={`transition-all duration-500 flex flex-col items-center gap-6 md:gap-12 px-4 ${
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
         >
@@ -133,7 +163,7 @@ export default function Home() {
       {/* Services Section */}
       <section
         id="services"
-        className={`relative flex flex-col items-center justify-center min-h-[90vh] p-4 md:p-8 transition-all duration-1000 z-10 ${
+        className={`relative flex flex-col items-center justify-center min-h-[90vh] p-4 md:p-8 transition-all duration-700 z-10 ${
           activeSection === "services" ? "scale-100" : "scale-95"
         }`}
       >
@@ -170,6 +200,8 @@ export default function Home() {
                       fill
                       sizes="(max-width: 768px) 64px, 96px"
                       className="object-contain filter invert"
+                      loading="eager"
+                      priority={index === 0}
                     />
                   </div>
                   <h2 className="text-2xl md:text-4xl font-light mb-4 md:mb-8 relative inline-block text-white">
