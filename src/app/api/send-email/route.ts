@@ -51,27 +51,81 @@ function checkRateLimit(
   return true;
 }
 
+// Fonction pour récupérer l'IP réelle du client
+function getClientIp(req: Request): string {
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  const realIp = req.headers.get("x-real-ip");
+
+  if (forwardedFor) {
+    // Prend la première IP de la liste (la plus proche du client)
+    return forwardedFor.split(",")[0].trim();
+  }
+
+  if (realIp) {
+    return realIp;
+  }
+
+  // Fallback sur l'IP directe
+  return "unknown";
+}
+
+// Fonction pour vérifier la force du mot de passe
+function checkPasswordStrength(password: string): {
+  isStrong: boolean;
+  message: string;
+} {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  const requirements = [];
+  if (password.length < minLength)
+    requirements.push(`au moins ${minLength} caractères`);
+  if (!hasUpperCase) requirements.push("une majuscule");
+  if (!hasLowerCase) requirements.push("une minuscule");
+  if (!hasNumbers) requirements.push("un chiffre");
+  if (!hasSpecialChar) requirements.push("un caractère spécial");
+
+  return {
+    isStrong: requirements.length === 0,
+    message:
+      requirements.length > 0
+        ? `Le mot de passe doit contenir ${requirements.join(", ")}.`
+        : "Mot de passe valide",
+  };
+}
+
 export async function POST(req: Request) {
   try {
-    // Récupérer l'adresse IP du client (simplifié - en production, utilisez des headers X-Forwarded-For ou similaires)
-    const ip = "client-ip"; // En production, récupérez la vraie IP
+    // Récupérer l'adresse IP réelle du client
+    const clientIp = getClientIp(req);
 
     // Récupération des données du formulaire
-    const { name, email, subject, message } = await req.json();
+    const { name, email, subject, message, password } = await req.json();
 
     // Récupération des informations de configuration
     const config = getServerConfig();
 
     // 1. Vérifications de sécurité de base
-    // Validation des champs
-    if (!name || !email || !message) {
+    if (!name || !email || !message || !password) {
       return NextResponse.json(
-        { error: "Les champs nom, email et message sont obligatoires" },
+        { error: "Tous les champs sont obligatoires" },
         { status: 400 }
       );
     }
 
-    // 2. Vérifications de sécurité avancées (si activées)
+    // 2. Vérification de la force du mot de passe
+    const passwordCheck = checkPasswordStrength(password);
+    if (!passwordCheck.isStrong) {
+      return NextResponse.json(
+        { error: passwordCheck.message },
+        { status: 400 }
+      );
+    }
+
+    // 3. Vérifications de sécurité avancées
     if (config.enableSecurityCheck) {
       // Valider l'email
       if (!validateEmail(email)) {
@@ -81,14 +135,14 @@ export async function POST(req: Request) {
         );
       }
 
-      // Vérifier le rate limiting
-      if (!checkRateLimit(ip, config)) {
+      // Vérifier le rate limiting avec l'IP réelle
+      if (!checkRateLimit(clientIp, config)) {
         return NextResponse.json(
           {
             error:
               "Trop de messages envoyés récemment. Veuillez réessayer plus tard.",
           },
-          { status: 429 } // Too Many Requests
+          { status: 429 }
         );
       }
 

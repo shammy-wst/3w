@@ -46,7 +46,7 @@ Pour que le formulaire de contact envoie de vrais emails en production, vous dev
 
 1. Créez un fichier `.env.local` à la racine du projet avec le contenu suivant :
 
-```
+```env
 EMAIL_USER=votre-email@gmail.com
 EMAIL_PASSWORD=votre-mot-de-passe-app
 CONTACT_EMAIL=contact@3wsolution.fr

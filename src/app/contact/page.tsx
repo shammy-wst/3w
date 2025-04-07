@@ -38,6 +38,7 @@ export default function Contact() {
     subject: "",
     message: "",
     captcha: "",
+    password: "",
   });
   const [formStatus, setFormStatus] = useState<
     "idle" | "loading" | "success" | "error"
@@ -45,6 +46,8 @@ export default function Contact() {
   const [errorMessage, setErrorMessage] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [captcha, setCaptcha] = useState<Captcha>({ question: "", answer: "" });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -71,39 +74,39 @@ export default function Contact() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    // Vérification simple des champs
-    if (!formData.name || !formData.email || !formData.message) {
-      setFormStatus("error");
-      setErrorMessage("Veuillez remplir tous les champs obligatoires.");
-      return;
-    }
-
-    // Vérification du CAPTCHA
-    if (formData.captcha !== captcha.answer) {
-      setFormStatus("error");
-      setErrorMessage(
-        "La réponse au CAPTCHA est incorrecte. Veuillez réessayer."
-      );
-      refreshCaptcha();
-      return;
-    }
+    setIsSubmitting(true);
 
     try {
-      setFormStatus("loading");
-      setPreviewUrl(null); // Réinitialiser l'URL de prévisualisation
+      // Validation de tous les champs
+      const errors: Record<string, string> = {};
+      Object.entries(formData).forEach(([name, value]) => {
+        const error = validateField(name, value);
+        if (error) errors[name] = error;
+      });
+
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Vérification du CAPTCHA
+      if (formData.captcha !== captcha.answer) {
+        setFormStatus("error");
+        setErrorMessage(
+          "La réponse au CAPTCHA est incorrecte. Veuillez réessayer."
+        );
+        refreshCaptcha();
+        setIsSubmitting(false);
+        return;
+      }
 
       const response = await fetch("/api/send-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          subject: formData.subject,
-          message: formData.message,
-        }),
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
@@ -119,11 +122,12 @@ export default function Contact() {
         subject: "",
         message: "",
         captcha: "",
+        password: "",
       });
       setFormStatus("success");
+      setFieldErrors({});
       refreshCaptcha();
 
-      // Si nous sommes en mode test avec Ethereal, affichons l'URL de prévisualisation
       if (data.previewUrl) {
         setPreviewUrl(data.previewUrl);
       }
@@ -136,7 +140,44 @@ export default function Contact() {
           : "Une erreur est survenue lors de l'envoi de l'email"
       );
       refreshCaptcha();
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  // Fonction de validation des champs
+  const validateField = (name: string, value: string): string => {
+    switch (name) {
+      case "email":
+        return !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
+          ? "Veuillez entrer une adresse email valide"
+          : "";
+      case "password":
+        if (value.length < 8)
+          return "Le mot de passe doit contenir au moins 8 caractères";
+        if (!value.match(/[A-Z]/))
+          return "Le mot de passe doit contenir au moins une majuscule";
+        if (!value.match(/[a-z]/))
+          return "Le mot de passe doit contenir au moins une minuscule";
+        if (!value.match(/[0-9]/))
+          return "Le mot de passe doit contenir au moins un chiffre";
+        if (!value.match(/[!@#$%^&*(),.?":{}|<>]/))
+          return "Le mot de passe doit contenir au moins un caractère spécial";
+        return "";
+      default:
+        return !value ? "Ce champ est requis" : "";
+    }
+  };
+
+  // Validation à la perte de focus
+  const handleBlur = (
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, value),
+    }));
   };
 
   const team = [
@@ -257,13 +298,17 @@ export default function Contact() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                   <div>
                     <label
                       htmlFor="name"
                       className="block text-sm font-medium text-gray-300 mb-1"
                     >
-                      Nom <span className="text-red-400">*</span>
+                      Nom{" "}
+                      <span className="text-red-400" aria-hidden="true">
+                        *
+                      </span>
+                      <span className="sr-only">requis</span>
                     </label>
                     <input
                       type="text"
@@ -271,10 +316,27 @@ export default function Contact() {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-white"
+                      onBlur={handleBlur}
+                      className={`w-full px-4 py-2 bg-zinc-800 border ${
+                        fieldErrors.name ? "border-red-500" : "border-zinc-700"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-white`}
                       required
-                      disabled={formStatus === "loading"}
+                      aria-required="true"
+                      aria-invalid={!!fieldErrors.name}
+                      aria-describedby={
+                        fieldErrors.name ? "name-error" : undefined
+                      }
+                      disabled={isSubmitting}
                     />
+                    {fieldErrors.name && (
+                      <p
+                        id="name-error"
+                        className="mt-1 text-sm text-red-400"
+                        role="alert"
+                      >
+                        {fieldErrors.name}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -291,11 +353,28 @@ export default function Contact() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-white"
+                      onBlur={handleBlur}
+                      className={`w-full px-4 py-2 bg-zinc-800 border ${
+                        fieldErrors.email ? "border-red-500" : "border-zinc-700"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-white`}
                       required
-                      disabled={formStatus === "loading"}
+                      aria-required="true"
+                      aria-invalid={!!fieldErrors.email}
+                      aria-describedby={
+                        fieldErrors.email ? "email-error" : undefined
+                      }
+                      disabled={isSubmitting}
                       placeholder="Votre adresse email pour recevoir notre réponse"
                     />
+                    {fieldErrors.email && (
+                      <p
+                        id="email-error"
+                        className="mt-1 text-sm text-red-400"
+                        role="alert"
+                      >
+                        {fieldErrors.email}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -311,9 +390,29 @@ export default function Contact() {
                       name="subject"
                       value={formData.subject}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-white"
-                      disabled={formStatus === "loading"}
+                      onBlur={handleBlur}
+                      className={`w-full px-4 py-2 bg-zinc-800 border ${
+                        fieldErrors.subject
+                          ? "border-red-500"
+                          : "border-zinc-700"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-white`}
+                      required
+                      aria-required="true"
+                      aria-invalid={!!fieldErrors.subject}
+                      aria-describedby={
+                        fieldErrors.subject ? "subject-error" : undefined
+                      }
+                      disabled={isSubmitting}
                     />
+                    {fieldErrors.subject && (
+                      <p
+                        id="subject-error"
+                        className="mt-1 text-sm text-red-400"
+                        role="alert"
+                      >
+                        {fieldErrors.subject}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -328,11 +427,72 @@ export default function Contact() {
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
+                      onBlur={handleBlur}
                       rows={5}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-white resize-none"
+                      className={`w-full px-4 py-2 bg-zinc-800 border ${
+                        fieldErrors.message
+                          ? "border-red-500"
+                          : "border-zinc-700"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-white resize-none`}
                       required
-                      disabled={formStatus === "loading"}
+                      aria-required="true"
+                      aria-invalid={!!fieldErrors.message}
+                      aria-describedby={
+                        fieldErrors.message ? "message-error" : undefined
+                      }
+                      disabled={isSubmitting}
                     ></textarea>
+                    {fieldErrors.message && (
+                      <p
+                        id="message-error"
+                        className="mt-1 text-sm text-red-400"
+                        role="alert"
+                      >
+                        {fieldErrors.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-gray-300 mb-1"
+                    >
+                      Mot de passe{" "}
+                      <span className="text-red-400" aria-hidden="true">
+                        *
+                      </span>
+                      <span className="sr-only">requis</span>
+                    </label>
+                    <input
+                      type="password"
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={`w-full px-4 py-2 bg-zinc-800 border ${
+                        fieldErrors.password
+                          ? "border-red-500"
+                          : "border-zinc-700"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-white`}
+                      required
+                      aria-required="true"
+                      aria-invalid={!!fieldErrors.password}
+                      aria-describedby={
+                        fieldErrors.password ? "password-error" : undefined
+                      }
+                      disabled={isSubmitting}
+                    />
+                    {fieldErrors.password && (
+                      <p
+                        id="password-error"
+                        className="mt-1 text-sm text-red-400"
+                        role="alert"
+                      >
+                        {fieldErrors.password}
+                      </p>
+                    )}
                   </div>
 
                   {/* CAPTCHA */}
@@ -352,17 +512,27 @@ export default function Contact() {
                           name="captcha"
                           value={formData.captcha}
                           onChange={handleChange}
-                          className="flex-1 px-3 py-1 bg-zinc-700 border border-zinc-600 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 text-white"
+                          onBlur={handleBlur}
+                          className={`flex-1 px-3 py-1 bg-zinc-700 border ${
+                            fieldErrors.captcha
+                              ? "border-red-500"
+                              : "border-zinc-600"
+                          } rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400 text-white`}
                           required
-                          disabled={formStatus === "loading"}
+                          aria-required="true"
+                          aria-invalid={!!fieldErrors.captcha}
+                          aria-describedby={
+                            fieldErrors.captcha ? "captcha-error" : undefined
+                          }
                           inputMode="numeric"
                           pattern="[0-9]+"
+                          disabled={isSubmitting}
                         />
                         <button
                           type="button"
                           onClick={refreshCaptcha}
                           className="px-3 py-1 bg-zinc-700 hover:bg-zinc-600 rounded-md text-xs"
-                          disabled={formStatus === "loading"}
+                          disabled={isSubmitting}
                         >
                           Rafraîchir
                         </button>
@@ -379,17 +549,23 @@ export default function Contact() {
 
                   <button
                     type="submit"
-                    disabled={formStatus === "loading"}
+                    disabled={
+                      isSubmitting || Object.keys(fieldErrors).length > 0
+                    }
                     className="w-full py-3 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-md text-white font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-70"
+                    aria-busy={isSubmitting}
                   >
-                    {formStatus === "loading" ? (
+                    {isSubmitting ? (
                       <>
-                        <FaSpinner className="animate-spin" />
+                        <FaSpinner
+                          className="animate-spin"
+                          aria-hidden="true"
+                        />
                         <span>Envoi en cours...</span>
                       </>
                     ) : (
                       <>
-                        <FaEnvelope />
+                        <FaEnvelope aria-hidden="true" />
                         <span>Envoyer</span>
                       </>
                     )}
