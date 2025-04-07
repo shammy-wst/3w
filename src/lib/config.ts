@@ -9,11 +9,10 @@ export function getServerConfig() {
 
   return {
     // Variables d'environnement pour l'envoi d'emails
-    // En mode développement, on force l'utilisation d'Ethereal en retournant des chaînes vides
     isDevelopment,
-    useTestMode: isDevelopment, // Force le mode test en développement
-    emailUser: isDevelopment ? "" : process.env.EMAIL_USER || "",
-    emailPassword: isDevelopment ? "" : process.env.EMAIL_PASSWORD || "",
+    useTestMode: false, // Désactivé pour utiliser le serveur OVH réel
+    emailUser: process.env.EMAIL_USER || "",
+    emailPassword: process.env.EMAIL_PASSWORD || "",
     contactEmail: process.env.CONTACT_EMAIL || "contact@3wsolution.fr",
     // Configuration de sécurité
     maxEmailsPerHour: 10, // Limite le nombre d'emails par IP

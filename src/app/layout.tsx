@@ -16,19 +16,6 @@ const interMono = Inter({
   display: "swap",
 });
 
-// Script d'enregistrement du Service Worker
-const swRegistration = `
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js').then(function(registration) {
-        console.log('ServiceWorker registration successful');
-      }, function(err) {
-        console.log('ServiceWorker registration failed: ', err);
-      });
-    });
-  }
-`;
-
 export const metadata: Metadata = {
   metadataBase: new URL("https://3wsolution.fr"),
   title: {
@@ -112,16 +99,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className="scroll-smooth">
       <head>
-        <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="icon" type="image/svg+xml" href="/3w_favicon.svg" />
-        <link rel="apple-touch-icon" href="/apple-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: swRegistration,
-          }}
-        />
       </head>
       <body
         className={`${inter.variable} ${interMono.variable} antialiased min-h-screen bg-black flex flex-col overflow-x-hidden`}

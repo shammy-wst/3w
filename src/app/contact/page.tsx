@@ -38,7 +38,6 @@ export default function Contact() {
     subject: "",
     message: "",
     captcha: "",
-    password: "",
   });
   const [formStatus, setFormStatus] = useState<
     "idle" | "loading" | "success" | "error"
@@ -122,7 +121,6 @@ export default function Contact() {
         subject: "",
         message: "",
         captcha: "",
-        password: "",
       });
       setFormStatus("success");
       setFieldErrors({});
@@ -152,18 +150,6 @@ export default function Contact() {
         return !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
           ? "Veuillez entrer une adresse email valide"
           : "";
-      case "password":
-        if (value.length < 8)
-          return "Le mot de passe doit contenir au moins 8 caractères";
-        if (!value.match(/[A-Z]/))
-          return "Le mot de passe doit contenir au moins une majuscule";
-        if (!value.match(/[a-z]/))
-          return "Le mot de passe doit contenir au moins une minuscule";
-        if (!value.match(/[0-9]/))
-          return "Le mot de passe doit contenir au moins un chiffre";
-        if (!value.match(/[!@#$%^&*(),.?":{}|<>]/))
-          return "Le mot de passe doit contenir au moins un caractère spécial";
-        return "";
       default:
         return !value ? "Ce champ est requis" : "";
     }
@@ -174,10 +160,19 @@ export default function Contact() {
     e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFieldErrors((prev) => ({
-      ...prev,
-      [name]: validateField(name, value),
-    }));
+    setFieldErrors((prev) => {
+      // Si le champ est valide, supprime l'erreur
+      const error = validateField(name, value);
+      const newErrors = { ...prev };
+
+      if (error) {
+        newErrors[name] = error;
+      } else {
+        delete newErrors[name];
+      }
+
+      return newErrors;
+    });
   };
 
   const team = [
@@ -453,48 +448,6 @@ export default function Contact() {
                     )}
                   </div>
 
-                  <div>
-                    <label
-                      htmlFor="password"
-                      className="block text-sm font-medium text-gray-300 mb-1"
-                    >
-                      Mot de passe{" "}
-                      <span className="text-red-400" aria-hidden="true">
-                        *
-                      </span>
-                      <span className="sr-only">requis</span>
-                    </label>
-                    <input
-                      type="password"
-                      id="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      className={`w-full px-4 py-2 bg-zinc-800 border ${
-                        fieldErrors.password
-                          ? "border-red-500"
-                          : "border-zinc-700"
-                      } rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-white`}
-                      required
-                      aria-required="true"
-                      aria-invalid={!!fieldErrors.password}
-                      aria-describedby={
-                        fieldErrors.password ? "password-error" : undefined
-                      }
-                      disabled={isSubmitting}
-                    />
-                    {fieldErrors.password && (
-                      <p
-                        id="password-error"
-                        className="mt-1 text-sm text-red-400"
-                        role="alert"
-                      >
-                        {fieldErrors.password}
-                      </p>
-                    )}
-                  </div>
-
                   {/* CAPTCHA */}
                   <div className="pt-2 border-t border-zinc-700">
                     <div className="flex items-center mb-2">
@@ -549,9 +502,7 @@ export default function Contact() {
 
                   <button
                     type="submit"
-                    disabled={
-                      isSubmitting || Object.keys(fieldErrors).length > 0
-                    }
+                    disabled={isSubmitting}
                     className="w-full py-3 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-md text-white font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-70"
                     aria-busy={isSubmitting}
                   >

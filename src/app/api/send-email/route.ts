@@ -69,63 +69,26 @@ function getClientIp(req: Request): string {
   return "unknown";
 }
 
-// Fonction pour vérifier la force du mot de passe
-function checkPasswordStrength(password: string): {
-  isStrong: boolean;
-  message: string;
-} {
-  const minLength = 8;
-  const hasUpperCase = /[A-Z]/.test(password);
-  const hasLowerCase = /[a-z]/.test(password);
-  const hasNumbers = /\d/.test(password);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-  const requirements = [];
-  if (password.length < minLength)
-    requirements.push(`au moins ${minLength} caractères`);
-  if (!hasUpperCase) requirements.push("une majuscule");
-  if (!hasLowerCase) requirements.push("une minuscule");
-  if (!hasNumbers) requirements.push("un chiffre");
-  if (!hasSpecialChar) requirements.push("un caractère spécial");
-
-  return {
-    isStrong: requirements.length === 0,
-    message:
-      requirements.length > 0
-        ? `Le mot de passe doit contenir ${requirements.join(", ")}.`
-        : "Mot de passe valide",
-  };
-}
-
 export async function POST(req: Request) {
   try {
     // Récupérer l'adresse IP réelle du client
     const clientIp = getClientIp(req);
 
     // Récupération des données du formulaire
-    const { name, email, subject, message, password } = await req.json();
+    const { name, email, subject, message } = await req.json();
 
     // Récupération des informations de configuration
     const config = getServerConfig();
 
     // 1. Vérifications de sécurité de base
-    if (!name || !email || !message || !password) {
+    if (!name || !email || !message) {
       return NextResponse.json(
         { error: "Tous les champs sont obligatoires" },
         { status: 400 }
       );
     }
 
-    // 2. Vérification de la force du mot de passe
-    const passwordCheck = checkPasswordStrength(password);
-    if (!passwordCheck.isStrong) {
-      return NextResponse.json(
-        { error: passwordCheck.message },
-        { status: 400 }
-      );
-    }
-
-    // 3. Vérifications de sécurité avancées
+    // 2. Vérifications de sécurité avancées
     if (config.enableSecurityCheck) {
       // Valider l'email
       if (!validateEmail(email)) {
@@ -234,7 +197,7 @@ export async function POST(req: Request) {
         `,
       };
     } else {
-      // MODE PRODUCTION avec Gmail ou autre service
+      // MODE PRODUCTION avec OVH ou autre service
       if (!config.emailUser || !config.emailPassword) {
         console.error(
           "Erreur: Informations d'authentification email manquantes"
@@ -248,13 +211,16 @@ export async function POST(req: Request) {
         );
       }
 
-      // Configuration du transporteur d'email réel
+      // Configuration du transporteur d'email pour OVH
       transporter = nodemailer.createTransport({
-        service: "gmail", // Utilisez votre service d'emails préféré
+        host: "pro3.mail.ovh.net", // Serveur pour mail Pro
+        port: 587,
+        secure: false,
         auth: {
-          user: config.emailUser,
+          user: config.emailUser, // L'adresse complète
           pass: config.emailPassword,
         },
+        debug: config.isDevelopment,
       });
 
       // Configuration du mail avec signature sécurisée
